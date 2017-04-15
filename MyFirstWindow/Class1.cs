@@ -49,21 +49,88 @@ namespace MyFirstWindow
             if (node != null)
             {
                 //                ConfigNode.LoadObjectFromConfig(this, node);
-                ConfigNode childnode1 = node.GetNode("Basic Window");
-                if (childnode1 != null)
+                ConfigNode childnode = node.GetNode("Basic_Window");
+                if (childnode != null)
                 {
-                    if(childnode1.HasValue("_windowRect"))
+                    if (childnode.HasValue("_windowRect"))
                     {
-                        string s = childnode1.GetValue("_windowRect");
-                        int[] ia = Array.ConvertAll(s.Split(), int.Parse);
-                        _windowRect.x = ia[0];
+                        string s = childnode.GetValue("_windowRect");
+                        try
+                        {
+                            int[] ia = Array.ConvertAll(s.Split(), int.Parse);
+                            _windowRect.Set(ia[0], ia[1], ia[2], ia[3]);
+                        }
+                        catch
+                        {
+                            _windowRect.Set(100, 100, 400, 200);
+                        }
                     }
-                 //       _windowRect = Convert.
+
+                    if (childnode.HasValue("_scrollPosition"))
+                    {
+                        string s = childnode.GetValue("_scrollPosition");
+                        try
+                        {
+                            float[] fa = Array.ConvertAll(s.Split(), float.Parse);
+                            _scrollPosition.Set(fa[0], fa[1]);
+                        }
+                        catch
+                        {
+                            _scrollPosition = Vector2.zero;
+                        }
+                    }
+
+                    if (childnode.HasValue("_sliderValue"))
+                    {
+                        string s = childnode.GetValue("_sliderValue");
+                        try
+                        {
+                            _sliderValue = float.Parse(s);
+                        }
+                        catch
+                        {
+                            _sliderValue = 1;
+                        }
+                    }
+
+                    if (childnode.HasValue("_textValue"))
+                        _textValue = childnode.GetValue("_textValue");
+                    else
+                        _textValue = " ";
+
+                    if (childnode.HasValue("_toggleValue"))
+                        _toggleValue = Convert.ToBoolean(childnode.GetValue("_toggleValue"));
+                    else
+                        _toggleValue = true;
+
+                    if (childnode.HasValue("doWindow0"))
+                        doWindow0 = Convert.ToBoolean(childnode.GetValue("doWindow0"));
+                    else
+                        doWindow0 = true;
                 }
 
+                childnode = node.GetNode("Info");
+                if (childnode != null)
+                {
+                    if (childnode.HasValue("_popupRect"))
+                    {
+                        string s = childnode.GetValue("_popupRect");
+                        try
+                        {
+                            int[] ia = Array.ConvertAll(s.Split(), int.Parse);
+                            _popupRect.Set(ia[0], ia[1], ia[2], ia[3]);
+                        }
+                        catch
+                        {
+                            _popupRect.Set(500, 500, 200, 100);
+                        }
+                    }
 
-
-
+                    if (childnode.HasValue("_popupflag"))
+                        _popupflag = Convert.ToBoolean(childnode.GetValue("_popupflag"));
+                    else
+                        _popupflag = false;
+                }
             }
         }
 
@@ -72,7 +139,7 @@ namespace MyFirstWindow
             //           var node = ConfigNode.CreateConfigFromObject(this);
             ConfigNode node = new ConfigNode("MyFirstModConfig");
 
-            ConfigNode childnode1 = node.AddNode("Basic Window");
+            ConfigNode childnode1 = node.AddNode("Basic_Window");
 
             childnode1.AddValue("_windowRect", _windowRect);
             childnode1.AddValue("_scrollPosition", _scrollPosition);
