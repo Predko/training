@@ -13,23 +13,23 @@ namespace MyFirstWindow
         string _fnamesave = "GameData/MyFirstMod/myFirstWindow.sav";
 
         readonly int _windowId = 0;
-        [Persistent]
+//        [Persistent]
         Rect _windowRect = new Rect(100, 100, 400, 200);
-        [Persistent]
+//        [Persistent]
         Vector2 _scrollPosition;
-        [Persistent]
+//        [Persistent]
         float _sliderValue = 1;
-        [Persistent]
+//        [Persistent]
         string _textValue = "demo";
-        [Persistent]
+//        [Persistent]
         bool _toggleValue = true;
-        [Persistent]
+//        [Persistent]
         bool doWindow0 = true;
 
         readonly int _popupwindowId = 1;
-        [Persistent]
+//        [Persistent]
         Rect _popupRect = new Rect(500, 500, 200, 100);
-        [Persistent]
+//        [Persistent]
         bool _popupflag = false; // no visible
 
         private void Awake()
@@ -44,16 +44,47 @@ namespace MyFirstWindow
 
         void load_cfg()
         {
-            var node = ConfigNode.Load(_fnamesave);
+            ConfigNode node = ConfigNode.Load(_fnamesave);
+
             if (node != null)
             {
-                ConfigNode.LoadObjectFromConfig(this, node);
+                //                ConfigNode.LoadObjectFromConfig(this, node);
+                ConfigNode childnode1 = node.GetNode("Basic Window");
+                if (childnode1 != null)
+                {
+                    if(childnode1.HasValue("_windowRect"))
+                    {
+                        string s = childnode1.GetValue("_windowRect");
+                        int[] ia = Array.ConvertAll(s.Split(), int.Parse);
+                        _windowRect.x = ia[0];
+                    }
+                 //       _windowRect = Convert.
+                }
+
+
+
+
             }
         }
 
         void save_cfg()
         {
-            var node = ConfigNode.CreateConfigFromObject(this);
+            //           var node = ConfigNode.CreateConfigFromObject(this);
+            ConfigNode node = new ConfigNode("MyFirstModConfig");
+
+            ConfigNode childnode1 = node.AddNode("Basic Window");
+
+            childnode1.AddValue("_windowRect", _windowRect);
+            childnode1.AddValue("_scrollPosition", _scrollPosition);
+            childnode1.AddValue("_sliderValue", _sliderValue);
+            childnode1.AddValue("_textValue", _textValue);
+            childnode1.AddValue("_toggleValue", _toggleValue);
+            childnode1.AddValue("doWindow0", doWindow0);
+
+            ConfigNode childnode2 = node.AddNode("Info");
+            childnode2.AddValue("_popupRect", _popupRect);
+            childnode2.AddValue("_popupflag", _popupflag);
+
             node.Save(_fnamesave);
         }
 
