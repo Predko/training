@@ -108,7 +108,8 @@ namespace MyFirstWindow
                         string s = childnode.GetValue("_popupRect");
                         try
                         {
-                            int[] ia = Array.ConvertAll(s.Split(), int.Parse);
+                            int[] ia = Array.ConvertAll(s.Split("x:ywidth heg".ToCharArray()), int.Parse);
+                            Debug.Log("****0" + ia[0] + "/n" + ia[1] + "/n" + ia[2] + "/n" + ia[3]);
                             _popupRect.Set(ia[0], ia[1], ia[2], ia[3]);
                         }
                         catch
