@@ -45,6 +45,7 @@ namespace MyFirstWindow
                 {
                     if (childnode.HasValue("_windowRect"))
                     {
+                        Debug.Log("[MyFirstWindow]_____________if (childnode.HasValue(\"_windowRect\"))");
                         string s = childnode.GetValue("_windowRect");
                         try
                         {
