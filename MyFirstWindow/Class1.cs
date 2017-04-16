@@ -13,23 +13,15 @@ namespace MyFirstWindow
         string _fnamesave = "GameData/MyFirstMod/myFirstWindow.sav";
 
         readonly int _windowId = 0;
-//        [Persistent]
         Rect _windowRect = new Rect(100, 100, 400, 200);
-//        [Persistent]
         Vector2 _scrollPosition;
-//        [Persistent]
         float _sliderValue = 1;
-//        [Persistent]
         string _textValue = "demo";
-//        [Persistent]
         bool _toggleValue = true;
-//        [Persistent]
         bool doWindow0 = true;
 
         readonly int _popupwindowId = 1;
-//        [Persistent]
         Rect _popupRect = new Rect(500, 500, 200, 100);
-//        [Persistent]
         bool _popupflag = false; // no visible
 
         private void Awake()
@@ -48,7 +40,6 @@ namespace MyFirstWindow
 
             if (node != null)
             {
-                //                ConfigNode.LoadObjectFromConfig(this, node);
                 ConfigNode childnode = node.GetNode("Basic_Window");
                 if (childnode != null)
                 {
@@ -136,7 +127,6 @@ namespace MyFirstWindow
 
         void save_cfg()
         {
-            //           var node = ConfigNode.CreateConfigFromObject(this);
             ConfigNode node = new ConfigNode("MyFirstModConfig");
 
             ConfigNode childnode1 = node.AddNode("Basic_Window");
@@ -184,8 +174,6 @@ namespace MyFirstWindow
 
             if (GUILayout.Button("Press me"))
             {
-                //                PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), 
-                //                                            "Info", "Hello! Button pressed.", "Ok", false, HighLogic.UISkin);
                 _popupflag = true;
             }
 
