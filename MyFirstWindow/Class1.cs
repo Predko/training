@@ -34,6 +34,8 @@ namespace MyFirstWindow
             save_cfg();
         }
 
+
+        // Загрузка сохранённых данных окна
         void load_cfg()
         {
             ConfigNode node = ConfigNode.Load(_fnamesave);
@@ -46,17 +48,11 @@ namespace MyFirstWindow
                     if (childnode.HasValue("_windowRect"))
                     {
                         Debug.Log("[MyFirstWindow]_____________if (childnode.HasValue(\"_windowRect\"))");
-                        string s = childnode.GetValue("_windowRect");
-                        try
-                        {
-                            int[] ia = Array.ConvertAll(s.Split("x:ywidth heg".ToCharArray()), int.Parse);
-                            Debug.Log("****0" + ia[0] + "/n" + ia[1] + "/n" + ia[2] + "/n" + ia[3]);
-                            _windowRect.Set(ia[0], ia[1], ia[2], ia[3]);
-                        }
-                        catch
-                        {
-                            _windowRect.Set(100, 100, 400, 200);
-                        }
+
+                        if (!StrKSPToRect(childnode.GetValue("_windowRect"), ref _windowRect))
+                             _windowRect.Set(100, 100, 400, 200);
+
+                        Debug.Log("****0" + _windowRect);
                     }
 
                     if (childnode.HasValue("_scrollPosition"))
@@ -108,16 +104,12 @@ namespace MyFirstWindow
                     if (childnode.HasValue("_popupRect"))
                     {
                         string s = childnode.GetValue("_popupRect");
-                        try
-                        {
-                            int[] ia = Array.ConvertAll(s.Split("x:ywidth heg".ToCharArray()), int.Parse);
-                            Debug.Log("****1" + ia[0] + "/n" + ia[1] + "/n" + ia[2] + "/n" + ia[3]);
-                            _popupRect.Set(ia[0], ia[1], ia[2], ia[3]);
-                        }
-                        catch
-                        {
+                        Debug.Log("[MyFirstWindow]_____________\nif (childnode.HasValue(\"_popupRect\"))");
+
+                        if (!StrKSPToRect(childnode.GetValue("_popupRect"), ref _popupRect))
                             _popupRect.Set(500, 500, 200, 100);
-                        }
+
+                        Debug.Log("****0" + _popupRect);
                     }
 
                     if (childnode.HasValue("_popupflag"))
@@ -128,6 +120,40 @@ namespace MyFirstWindow
             }
         }
 
+        delegate int GetIntFromSubstring(string Ss);
+        // преобразование строки(Rect) когфиг файла KSP в Rect (int)
+        Boolean StrKSPToRect(string s, ref Rect rect)
+        {
+            int idx, idx1;
+
+            GetIntFromSubstring GetInt = (String Ss) =>
+            {
+                idx = s.IndexOf(Ss);
+                if (idx == -1 && idx + Ss.Length < s.Length)
+                    throw new Exception();
+
+                idx += Ss.Length;
+                idx1 = s.IndexOf(".", idx);
+                if (idx1 == -1)
+                    throw new Exception();
+
+                return int.Parse(s.Substring(idx, idx1 - idx));
+            };
+
+            try
+            {
+                rect.x = GetInt("x:");
+                rect.y = GetInt("y:");
+                rect.width = GetInt("width:");
+                rect.height = GetInt("height:");
+                return true;
+            }
+            catch {
+                return false;
+            }
+        }
+
+        // запись данных окна в конфиг файл
         void save_cfg()
         {
             ConfigNode node = new ConfigNode("MyFirstModConfig");
@@ -150,9 +176,12 @@ namespace MyFirstWindow
 
         void OnGUI()
         {
+            // переключатель видимости окна Basic Window
             doWindow0 = GUI.Toggle(new Rect(_windowRect.x, _windowRect.y - 30, 100, 20), doWindow0, "Window 0");
+
             if (doWindow0)
             {
+                // отображение окна
                 _windowRect = GUI.Window(_windowId, _windowRect, DoWindow0, "Basic Window");
                 if (_windowRect.y < 30)
                     _windowRect.y = 30;
@@ -160,11 +189,13 @@ namespace MyFirstWindow
 
             if (_popupflag)
             {
+                // Отображение окна
                 _popupRect = GUILayout.Window(_popupwindowId, _popupRect, DoPopupWindow, "Info");
             }
 
         }
 
+        // Окно(главное) "Basic Window"
         void DoWindow0(int windowID)
         {
             _scrollPosition = GUILayout.BeginScrollView(_scrollPosition);
@@ -208,24 +239,25 @@ namespace MyFirstWindow
             GUI.DragWindow(new Rect(0, 0, 10000, 20));
         }
 
+        // вспомогательное окно "Info" 
         void DoPopupWindow(int _windowid)
         {
             GUILayout.Label("Save and load config");
             if (GUILayout.Button("Save"))
             {
                 _popupflag = false;
-                save_cfg();
+                save_cfg(); // записать данные окон
             }
 
             if (GUILayout.Button("Load"))
             {
                 _popupflag = false;
-                load_cfg();
+                load_cfg(); // загрузить данные окон
             }
 
             if (GUILayout.Button("Cancel"))
             {
-                _popupflag = false;
+                _popupflag = false; // просто закрыть вспомогательное окно
             }
 
         }
