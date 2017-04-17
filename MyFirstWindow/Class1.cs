@@ -47,12 +47,8 @@ namespace MyFirstWindow
                 {
                     if (childnode.HasValue("_windowRect"))
                     {
-                        Debug.Log("[MyFirstWindow]_____________if (childnode.HasValue(\"_windowRect\"))");
-
                         if (!StrKSPToRect(childnode.GetValue("_windowRect"), ref _windowRect))
                              _windowRect.Set(100, 100, 400, 200);
-
-                        Debug.Log("****0" + _windowRect);
                     }
 
                     if (childnode.HasValue("_scrollPosition"))
@@ -104,12 +100,8 @@ namespace MyFirstWindow
                     if (childnode.HasValue("_popupRect"))
                     {
                         string s = childnode.GetValue("_popupRect");
-                        Debug.Log("[MyFirstWindow]_____________\nif (childnode.HasValue(\"_popupRect\"))");
-
                         if (!StrKSPToRect(childnode.GetValue("_popupRect"), ref _popupRect))
                             _popupRect.Set(500, 500, 200, 100);
-
-                        Debug.Log("****0" + _popupRect);
                     }
 
                     if (childnode.HasValue("_popupflag"))
