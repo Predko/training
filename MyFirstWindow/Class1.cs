@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using KSP.IO;
+
 
 
 namespace MyFirstWindow
 {
-    [KSPAddon(KSPAddon.Startup.Flight, false)]
+    [KSPAddon(KSPAddon.Startup.MainMenu, false)]
     public class MyFirstWindow : MonoBehaviour
     {
-        string _fnamesave = "GameData/MyFirstMod/myFirstWindow.sav";
 
         readonly int _windowId = 0;
         Rect _windowRect = new Rect(100, 100, 400, 200);
@@ -18,7 +19,7 @@ namespace MyFirstWindow
         float _sliderValue = 1;
         string _textValue = "demo";
         bool _toggleValue = true;
-        bool doWindow0 = true;
+        bool _doWindow0 = true;
 
         readonly int _popupwindowId = 1;
         Rect _popupRect = new Rect(500, 500, 200, 100);
@@ -38,148 +39,61 @@ namespace MyFirstWindow
         // Загрузка сохранённых данных окна
         void load_cfg()
         {
-            ConfigNode node = ConfigNode.Load(_fnamesave);
+            PluginConfiguration config = PluginConfiguration.CreateForType<MyFirstWindow>();
 
-            if (node != null)
-            {
-                ConfigNode childnode = node.GetNode("Basic_Window");
-                if (childnode != null)
-                {
-                    if (childnode.HasValue("_windowRect"))
-                    {
-                        Debug.Log("[MyFirstWindow]_____________if (childnode.HasValue(\"_windowRect\"))");
+            //if (config != null)
+            //    return;
 
-                        if (!StrKSPToRect(childnode.GetValue("_windowRect"), ref _windowRect))
-                             _windowRect.Set(100, 100, 400, 200);
+            config.load();
 
-                        Debug.Log("****0" + _windowRect);
-                    }
+            _windowRect = config.GetValue<Rect>("_windowRect", new Rect(100, 100, 400, 200));
 
-                    if (childnode.HasValue("_scrollPosition"))
-                    {
-                        string s = childnode.GetValue("_scrollPosition");
-                        try
-                        {
-                            float[] fa = Array.ConvertAll(s.Split(), float.Parse);
-                            _scrollPosition.Set(fa[0], fa[1]);
-                        }
-                        catch
-                        {
-                            _scrollPosition = Vector2.zero;
-                        }
-                    }
+            _scrollPosition = config.GetValue<Vector2>("_scrollPosition", new Vector2(0, 0));
 
-                    if (childnode.HasValue("_sliderValue"))
-                    {
-                        string s = childnode.GetValue("_sliderValue");
-                        try
-                        {
-                            _sliderValue = float.Parse(s);
-                        }
-                        catch
-                        {
-                            _sliderValue = 1;
-                        }
-                    }
+            _sliderValue = (float)config.GetValue<double>("_sliderValue", 1);
 
-                    if (childnode.HasValue("_textValue"))
-                        _textValue = childnode.GetValue("_textValue");
-                    else
-                        _textValue = " ";
+            _textValue = config.GetValue<string>("_textValue", " ");
 
-                    if (childnode.HasValue("_toggleValue"))
-                        _toggleValue = Convert.ToBoolean(childnode.GetValue("_toggleValue"));
-                    else
-                        _toggleValue = true;
+            _toggleValue  = config.GetValue<Boolean>("_toggleValue", true);
 
-                    if (childnode.HasValue("doWindow0"))
-                        doWindow0 = Convert.ToBoolean(childnode.GetValue("doWindow0"));
-                    else
-                        doWindow0 = true;
-                }
+            _doWindow0 = config.GetValue<Boolean>("_doWindow0", true);
 
-                childnode = node.GetNode("Info");
-                if (childnode != null)
-                {
-                    if (childnode.HasValue("_popupRect"))
-                    {
-                        string s = childnode.GetValue("_popupRect");
-                        Debug.Log("[MyFirstWindow]_____________\nif (childnode.HasValue(\"_popupRect\"))");
+            _popupRect = config.GetValue<Rect>("_popupRect", new Rect(500, 500, 200, 100));
 
-                        if (!StrKSPToRect(childnode.GetValue("_popupRect"), ref _popupRect))
-                            _popupRect.Set(500, 500, 200, 100);
-
-                        Debug.Log("****0" + _popupRect);
-                    }
-
-                    if (childnode.HasValue("_popupflag"))
-                        _popupflag = Convert.ToBoolean(childnode.GetValue("_popupflag"));
-                    else
-                        _popupflag = false;
-                }
-            }
-        }
-
-        delegate int GetIntFromSubstring(string Ss);
-        // преобразование строки(Rect) когфиг файла KSP в Rect (int)
-        Boolean StrKSPToRect(string s, ref Rect rect)
-        {
-            int idx, idx1;
-
-            GetIntFromSubstring GetInt = (String Ss) =>
-            {
-                idx = s.IndexOf(Ss);
-                if (idx == -1 && idx + Ss.Length < s.Length)
-                    throw new Exception();
-
-                idx += Ss.Length;
-                idx1 = s.IndexOf(".", idx);
-                if (idx1 == -1)
-                    throw new Exception();
-
-                return int.Parse(s.Substring(idx, idx1 - idx));
-            };
-
-            try
-            {
-                rect.x = GetInt("x:");
-                rect.y = GetInt("y:");
-                rect.width = GetInt("width:");
-                rect.height = GetInt("height:");
-                return true;
-            }
-            catch {
-                return false;
-            }
+            _popupflag = config.GetValue<Boolean>("_popupflag", false);
         }
 
         // запись данных окна в конфиг файл
         void save_cfg()
         {
-            ConfigNode node = new ConfigNode("MyFirstModConfig");
+            PluginConfiguration config = PluginConfiguration.CreateForType<MyFirstWindow>();
 
-            ConfigNode childnode1 = node.AddNode("Basic_Window");
+            config.SetValue("_windowRect", _windowRect);
 
-            childnode1.AddValue("_windowRect", _windowRect);
-            childnode1.AddValue("_scrollPosition", _scrollPosition);
-            childnode1.AddValue("_sliderValue", _sliderValue);
-            childnode1.AddValue("_textValue", _textValue);
-            childnode1.AddValue("_toggleValue", _toggleValue);
-            childnode1.AddValue("doWindow0", doWindow0);
+            config.SetValue("_scrollPosition", _scrollPosition);
 
-            ConfigNode childnode2 = node.AddNode("Info");
-            childnode2.AddValue("_popupRect", _popupRect);
-            childnode2.AddValue("_popupflag", _popupflag);
+            config.SetValue("_sliderValue", (double)_sliderValue);
 
-            node.Save(_fnamesave);
+            config.SetValue("_textValue", _textValue);
+
+            config.SetValue("_toggleValue", _toggleValue);
+
+            config.SetValue("_doWindow0", _doWindow0);
+
+            config.SetValue("_popupRect", _popupRect);
+
+            config.SetValue("_popupflag", _popupflag);
+
+            config.save();
+
         }
 
         void OnGUI()
         {
             // переключатель видимости окна Basic Window
-            doWindow0 = GUI.Toggle(new Rect(_windowRect.x, _windowRect.y - 30, 100, 20), doWindow0, "Window 0");
+            _doWindow0 = GUI.Toggle(new Rect(_windowRect.x, _windowRect.y - 30, 100, 20), _doWindow0, "Window 0");
 
-            if (doWindow0)
+            if (_doWindow0)
             {
                 // отображение окна
                 _windowRect = GUI.Window(_windowId, _windowRect, DoWindow0, "Basic Window");
@@ -259,7 +173,7 @@ namespace MyFirstWindow
             {
                 _popupflag = false; // просто закрыть вспомогательное окно
             }
-
+            GUI.DragWindow();
         }
     }
 }
