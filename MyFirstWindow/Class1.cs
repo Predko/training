@@ -34,10 +34,39 @@ namespace MyFirstWindow
             //_windowRect = config.GetValue<Rect>("_windowRect", new Rect(100, 100, 400, 200));
         }
 
+
+        delegate void SerializeAndWrite(VesselInfo v, FileStream file);
+        
         // запись данных окна в конфиг файл
         void save_cfg()
         {
-            //config.SetValue("_windowRect", _windowRect);
+            try
+            {
+                SerializeAndWrite swrite = (v, file) =>
+                {
+                    var result = IOUtils.SerializeToBinary(v);
+                    file.Write(result, 0, result.Length);
+                };
+
+                if (!File.Exists<MyFirstWindow>("save.sav"))
+                {
+                    using (var file = File.Create<MyFirstWindow>("save.sav"))
+                    {
+                        swrite(vi, file);
+                    }
+                }
+                else
+                {
+                    using (var file = File.Open<MyFirstWindow>("save.sav", FileMode.Open))
+                    {
+                        swrite(vi, file);
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                Debug.LogException(ex);
+            }
 
         }
 
@@ -83,43 +112,35 @@ namespace MyFirstWindow
 
             GUI.skin.label.alignment = TextAnchor.MiddleRight;
 
-            using (var hs = new GUILayout.HorizontalScope("scale"))
-            {
-
-                for (int i = 1; i != 10; i++)
-                    GUILayout.Label(String.Format("{0}0", i), GUILayout.Width(10));
-            }
-
-
             using (var hs = new GUILayout.HorizontalScope("Name vessel"))
             {
-                GUILayout.Label("    Name vessel:");
-                GUILayout.TextArea(vi.name);
+                GUILayout.Label("Name vessel:", GUILayout.Width(200));
+                GUILayout.TextArea(vi.name, GUILayout.Width(200));
             }
 
             using (var hs = new GUILayout.HorizontalScope("Altitude"))
             {
 
-                GUILayout.Label("       Altitude:");
-                GUILayout.TextArea(string.Format("{0,-10:f2}",vi.Altitude));
+                GUILayout.Label("Altitude:", GUILayout.Width(200));
+                GUILayout.TextArea(string.Format("{0,-10:f2}",vi.Altitude), GUILayout.Width(200));
             }
 
             using (var hs = new GUILayout.HorizontalScope("Gee force"))
             {
-                GUILayout.Label("      Gee force:");
-                GUILayout.TextArea(string.Format("{0,-10:f2}", vi.gforce));
+                GUILayout.Label("Gee force:", GUILayout.Width(200));
+                GUILayout.TextArea(string.Format("{0,-10:f2}", vi.gforce), GUILayout.Width(200));
             }
 
             using (var hs = new GUILayout.HorizontalScope("Surface speed"))
             {
-                GUILayout.Label("  Surface speed:");
-                GUILayout.TextArea(string.Format("{0,-10:f2}", vi.surf_speed));
+                GUILayout.Label("Surface speed:", GUILayout.Width(200));
+                GUILayout.TextArea(string.Format("{0,-10:f2}", vi.surf_speed), GUILayout.Width(200));
             }
 
             using (var hs = new GUILayout.HorizontalScope("Vertical speed"))
             {
-                GUILayout.Label(" Vertical speed:");
-                GUILayout.TextArea(string.Format("{0,-10:f2}", vi.vert_speed));
+                GUILayout.Label("Vertical speed:", GUILayout.Width(200));
+                GUILayout.TextArea(string.Format("{0,-10:f2}", vi.vert_speed), GUILayout.Width(200));
             }
 
             GUI.skin.label.alignment = (TextAnchor)la;
@@ -130,31 +151,8 @@ namespace MyFirstWindow
         }
     }
 
-    // вспомогательное окно 
-    void DoPopupWindow(int _windowid)
-    {
-        GUILayout.Label(string.Format("width = {0,10:d}", GUILayout.);
-        if (GUILayout.Button("Save"))
-        {
-            _popupflag = false;
-            save_cfg(); // записать данные окон
-        }
-
-        if (GUILayout.Button("Load"))
-        {
-            _popupflag = false;
-            load_cfg(); // загрузить данные окон
-        }
-
-        if (GUILayout.Button("Cancel"))
-        {
-            _popupflag = false; // просто закрыть вспомогательное окно
-        }
-        GUI.DragWindow();
-    }
-}
-
-internal class VesselInfo
+    [Serializable]
+    internal class VesselInfo
     {
         public double Altitude { get; set; }
         public double gforce { get; set; }
@@ -177,7 +175,7 @@ internal class VesselInfo
             name = v.name;
         }
 
-        public string ToString()
+        public override string ToString()
         {
             string s = "";
             s = name + Altitude + gforce + surf_speed + vert_speed;
