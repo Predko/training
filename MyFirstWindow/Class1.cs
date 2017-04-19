@@ -41,9 +41,9 @@ namespace MyFirstWindow
                     {
                         var buffer = new byte[file.Length];
                         file.Read(buffer, 0, buffer.Length);
-                        var res = IOUtils.DeserializeFromBinary(buffer);
+                        var res = IOUtils.DeserializeFromBinary(buffer) as VesselInfo;
                         if (res != null)
-                            vi = (VesselInfo)res;
+                            vi = res;
                         _isPause = true; // не обновлять информацию в vi (VesselInfo), пауза обновления информации
                     }
                 }
@@ -127,6 +127,12 @@ namespace MyFirstWindow
                 _isPause = (_isPause) ? false : true;
             }
 
+            if (GUILayout.Button("Export texture"))
+            {
+                Export();
+                ScreenMessages.PostScreenMessage("Export texture begin", .5f, ScreenMessageStyle.LOWER_CENTER);
+            }
+
             GUILayout.FlexibleSpace();
 
             GUILayout.EndHorizontal();
@@ -177,7 +183,45 @@ namespace MyFirstWindow
 
             GUI.DragWindow(new Rect(0, 0, 10000, 20));
         }
+
+        void Export()
+        {
+            foreach (GameDatabase.TextureInfo textr 
+                     in GameDatabase.Instance.databaseTexture.Where<GameDatabase.TextureInfo>(x => x.isReadable))
+            {
+                try
+                {
+                    string name = textr.name.Replace('/', '_');
+
+                    byte[] encodedtexture;
+                    try
+                    {
+                        encodedtexture = textr.texture.EncodeToJPG();
+                    }
+                    catch (Exception)
+                    {
+                        continue;
+                    }
+
+                    using (FileStream file = File.Create<MyFirstWindow>(name + ".jpg"))
+                    {
+                        if (file != null)
+                        {
+                            file.Write(encodedtexture, 0, encodedtexture.Length);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogException(ex);
+                }
+            }
+        }
     }
+
+
+
+
 
     [Serializable]
     internal class VesselInfo
