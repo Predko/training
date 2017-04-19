@@ -16,6 +16,8 @@ namespace MyFirstWindow
         readonly int _windowId = 0;
         Rect _windowRect = new Rect(100, 100, 400, 200);
 
+        Boolean _isPause = false;   // если true - не обновляет информацию о корабле
+
         VesselInfo vi = new VesselInfo();
 
         //private void Awake()
@@ -31,7 +33,25 @@ namespace MyFirstWindow
         // Загрузка сохранённых данных окна
         void load_cfg()
         {
-            //_windowRect = config.GetValue<Rect>("_windowRect", new Rect(100, 100, 400, 200));
+            try
+            {
+                if (File.Exists<MyFirstWindow>("save.sav"))
+                {
+                    using (var file = File.Open<MyFirstWindow>("save.sav", FileMode.Open))
+                    {
+                        var buffer = new byte[file.Length];
+                        file.Read(buffer, 0, buffer.Length);
+                        var res = IOUtils.DeserializeFromBinary(buffer);
+                        if (res != null)
+                            vi = (VesselInfo)res;
+                        _isPause = true; // не обновлять информацию в vi (VesselInfo), пауза обновления информации
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                Debug.LogException(ex);
+            }
         }
 
 
@@ -93,11 +113,18 @@ namespace MyFirstWindow
                 ScreenMessages.PostScreenMessage("Info saved", .5f, ScreenMessageStyle.LOWER_CENTER);
             }
 
-
             if (GUILayout.Button("Load"))
             {
                 load_cfg();
                 ScreenMessages.PostScreenMessage("Info loaded", .5f, ScreenMessageStyle.LOWER_CENTER);
+            }
+
+            if (GUILayout.Button((_isPause) ? "Continue": "Pause"))
+            {
+                ScreenMessages.PostScreenMessage((_isPause) ? "Info continued" : "Info paused", 
+                                                        .5f, ScreenMessageStyle.LOWER_CENTER);
+
+                _isPause = (_isPause) ? false : true;
             }
 
             GUILayout.FlexibleSpace();
@@ -106,7 +133,8 @@ namespace MyFirstWindow
 
             GUILayout.Space(10);
 
-            vi.SetInfo(FlightGlobals.ActiveVessel);
+            if (!_isPause)
+                vi.SetInfo(FlightGlobals.ActiveVessel);
 
             int la = (int)GUI.skin.label.alignment;
 
