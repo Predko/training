@@ -130,7 +130,13 @@ namespace MyFirstWindow
             if (GUILayout.Button("Export texture"))
             {
                 Export();
-                ScreenMessages.PostScreenMessage("Export texture begin", .5f, ScreenMessageStyle.LOWER_CENTER);
+                ScreenMessages.PostScreenMessage("Export texture completed", .5f, ScreenMessageStyle.LOWER_CENTER);
+            }
+
+            if (GUILayout.Button("Set texture"))
+            {
+                Replace();
+                ScreenMessages.PostScreenMessage("Texture installed", .5f, ScreenMessageStyle.LOWER_CENTER);
             }
 
             GUILayout.FlexibleSpace();
@@ -146,32 +152,32 @@ namespace MyFirstWindow
 
             GUI.skin.label.alignment = TextAnchor.MiddleRight;
 
-            using (var hs = new GUILayout.HorizontalScope("Name vessel"))
+            using (var hs = new GUILayout.HorizontalScope())
             {
                 GUILayout.Label("Name vessel:", GUILayout.Width(200));
                 GUILayout.TextArea(vi.name, GUILayout.Width(200));
             }
 
-            using (var hs = new GUILayout.HorizontalScope("Altitude"))
+            using (var hs = new GUILayout.HorizontalScope())
             {
 
                 GUILayout.Label("Altitude:", GUILayout.Width(200));
                 GUILayout.TextArea(string.Format("{0,-10:f2}",vi.Altitude), GUILayout.Width(200));
             }
 
-            using (var hs = new GUILayout.HorizontalScope("Gee force"))
+            using (var hs = new GUILayout.HorizontalScope())
             {
                 GUILayout.Label("Gee force:", GUILayout.Width(200));
                 GUILayout.TextArea(string.Format("{0,-10:f2}", vi.gforce), GUILayout.Width(200));
             }
 
-            using (var hs = new GUILayout.HorizontalScope("Surface speed"))
+            using (var hs = new GUILayout.HorizontalScope())
             {
                 GUILayout.Label("Surface speed:", GUILayout.Width(200));
                 GUILayout.TextArea(string.Format("{0,-10:f2}", vi.surf_speed), GUILayout.Width(200));
             }
 
-            using (var hs = new GUILayout.HorizontalScope("Vertical speed"))
+            using (var hs = new GUILayout.HorizontalScope())
             {
                 GUILayout.Label("Vertical speed:", GUILayout.Width(200));
                 GUILayout.TextArea(string.Format("{0,-10:f2}", vi.vert_speed), GUILayout.Width(200));
@@ -183,6 +189,41 @@ namespace MyFirstWindow
 
             GUI.DragWindow(new Rect(0, 0, 10000, 20));
         }
+
+        delegate void SetTexture(string texture, string newtexture);
+
+        void Replace()
+        {
+            SetTexture set_texture = (txr, ntxr) =>
+                        {
+                            var texture = GameDatabase.Instance.GetTexture(txr, false);
+                            if (texture == null)
+                            {
+                                Debug.Log("[MyFirstWindow] ----------------- error GetTexture/n/t/t" + txr);
+                                ScreenMessages.PostScreenMessage("Error GetTexture:" + txr, .5f, ScreenMessageStyle.LOWER_CENTER);
+                                return;
+                            }
+
+                            using (FileStream file = File.Open<MyFirstWindow>(ntxr, FileMode.Open))
+                            {
+                                if (file == null)
+                                {
+                                    Debug.Log("[MyFirstWindow] ------------------- error open file/n/t/t" + ntxr);
+                                    ScreenMessages.PostScreenMessage("Error Jpen file: " + ntxr, .5f, ScreenMessageStyle.LOWER_CENTER);
+                                    return;
+                                }
+
+                                byte[] buffer = new byte[file.Length];
+                                file.Read(buffer, 0, buffer.Length);
+                                texture.LoadImage(buffer);
+                            }
+                        };
+
+            set_texture("Squad/Parts/FuelTank/fuelTankJumbo-64/model000", "model000_edited.jpg");
+            set_texture("Squad/Parts/FuelTank/fuelTankJumbo-64/model001", "model001_edited.jpg");
+        }
+
+
 
         void Export()
         {
@@ -197,6 +238,8 @@ namespace MyFirstWindow
                     try
                     {
                         encodedtexture = textr.texture.EncodeToJPG();
+                        if (encodedtexture.Length == 0)
+                            continue;
                     }
                     catch (Exception)
                     {
@@ -249,9 +292,7 @@ namespace MyFirstWindow
 
         public override string ToString()
         {
-            string s = "";
-            s = name + Altitude + gforce + surf_speed + vert_speed;
-            return s;
+            return name + Altitude + gforce + surf_speed + vert_speed;
         }
     } 
 
